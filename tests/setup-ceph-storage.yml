@@ -43,15 +43,6 @@
       - drive3
       - journ1
     delegate_to: "{{ physical_host }}"
-  - name: Create directory for Ceph Files
-    file:
-      state: directory
-      path: "/mnt/{{ item }}"
-    with_items:
-      - drive1
-      - drive2
-      - drive3
-      - journ1
   - name: Create sparse Ceph files
     shell: "fallocate -l 10G /opt/{{ container_name }}_{{ item }}.img"
     args:
@@ -63,44 +54,22 @@
       - journ1
     register: ceph_create
     delegate_to: "{{ physical_host }}"
-  - name: Format Ceph files
-    filesystem:
-      fstype: xfs
-      opts: "-K"
-      dev: "/opt/{{ container_name }}_{{ item }}.img"
-    when: ceph_create | changed
+  - name: Run losetup
+    shell: "losetup --find --show -P /opt/{{ container_name }}_{{ item }}.img"
     with_items:
       - drive1
       - drive2
       - drive3
       - journ1
+    register: ceph_losetup
     delegate_to: "{{ physical_host }}"
-  - name: Create the Ceph fstab entries and mount the file systems
-    mount:
-      name: "/srv/{{ container_name }}_{{ item }}"
-      src: "/opt/{{ container_name }}_{{ item }}.img"
-      fstype: xfs
-      opts: 'loop,noatime,nodiratime,nobarrier,logbufs=8'
-      passno: 0
-      dump: 0
-      state: mounted
-    with_items:
-      - 'drive1'
-      - 'drive2'
-      - 'drive3'
-      - 'journ1'
-    register: mount_status
-    until: mount_status | success
-    retries: 5
-    delay: 2
+  - name: Partition loopbacks
+    shell: parted --script {{ item.stdout }} 'mklabel gpt' && parted --script {{ item.stdout }} 'mkpart primary ext4 1 -1'
+    with_items: "{{ ceph_losetup.results }}"
     delegate_to: "{{ physical_host }}"
   - name: Get block devices
-    shell: "lsblk | grep {{ container_name }}_{{ item }} | awk '{print $2}'"
-    with_items:
-      - "drive1"
-      - "drive2"
-      - "drive3"
-      - "journ1"
+    shell: "lsblk | grep {{ item.stdout|regex_replace('/dev/') }}p1 | awk '{print $2}'"
+    with_items: "{{ ceph_losetup.results }}"
     register: block_devs
     delegate_to: "{{ physical_host }}"
   - name: Ceph extra lxc config
@@ -120,35 +89,9 @@
       sleep: "{{ lxc_container_wait_params.sleep | default(omit) }}"
       timeout: "{{ lxc_container_wait_params.timeout | default(omit) }}"
   - name: Mknod on loopback devices
-    shell: "mknod -m 666 /dev/{{ item.item }} b {{ item.stdout.split(':')[0] }} {{ item.stdout.split(':')[1] }}"
-    with_items: "{{ block_devs.results }}"
+    #shell: "mknod -m 666 {{ device_mapping[item.0] }} b {{ item.1.stdout.split(':')[0] }} {{ item.1.stdout.split(':')[1] }}"
+    shell: "mknod -m 666 {{ device_mapping[item.0] }}1 b {{ item.1.stdout.split(':')[0] }} {{ item.1.stdout.split(':')[1] }}"
+    with_indexed_items: "{{ block_devs.results }}"
     failed_when: false
-  - name: Ensure Ceph fstab entriies are clear and file systems unmounted
-    mount:
-      name: "/mnt/{{ item }}"
-      src: "/dev/{{ item }}"
-      fstype: xfs
-      state: mounted
-#      opts: 'rw,relatime,attr2,nobarrier,inode64,logbufs=8,noquota'
-    with_items:
-      - 'drive1'
-      - 'drive2'
-      - 'drive3'
-      - 'journ1'
-    register: mount_status
-    until: mount_status | success
-    retries: 5
-    delay: 2
-  - name: Ensure permissions are setup
-    file:
-      state: directory
-      mode: 777
-      path: "/mnt/{{ item }}"
-    with_items:
-      - drive1
-      - drive2
-      - drive3
-      - journ1
   vars_files:
     - test-vars.yml
-
