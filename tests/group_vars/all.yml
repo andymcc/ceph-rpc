@@ -12,8 +12,8 @@ bridges:
     ip_addr: "{{ storage_addr_prefix }}.1"
 
 disable_transparent_hugepage: False
-journal_collocation: True
-#raw_multi_journal: True
+journal_collocation: False
+raw_multi_journal: True
 # You can override vars by using host or group vars
 
 ###########
