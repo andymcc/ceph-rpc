@@ -24,3 +24,9 @@ lxc_net_dhcp_range: 10.100.100.2,10.100.100.99
 lxc_net_bridge: lxcbr0
 lxc_kernel_options:
   - { key: 'fs.inotify.max_user_instances', value: 1024 }
+
+device_mapping:
+  - /dev/sda
+  - /dev/sdb
+  - /dev/sdc
+  - /dev/sdd
