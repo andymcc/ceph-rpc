@@ -2,12 +2,16 @@ set -e -u -x
 
 export ANSIBLE_PACKAGE=${ANSIBLE_PACKAGE:-"ansible==2.3.2.0"}
 export SSH_DIR=${SSH_DIR:-"/root/.ssh"}
-export ANSIBLE_ROLE_FILE=${ANSIBLE_ROLE_FILE:-"ansible-role-requirements.yml"}
+export ANSIBLE_ROLE_FILE=${ANSIBLE_ROLE_FILE:-"ansible-role-requirements-xenial.yml"}
 # Set the role fetch mode to any option [galaxy, git-clone]
 export ANSIBLE_ROLE_FETCH_MODE=${ANSIBLE_ROLE_FETCH_MODE:-git-clone}
 
 # Prefer dnf over yum for CentOS.
 which dnf &>/dev/null && RHT_PKG_MGR='dnf' || RHT_PKG_MGR='yum'
+
+if grep -q "Ubuntu 14.04" /etc/lsb-release; then
+  ANSIBLE_ROLE_FILE="ansible-role-requirements-trusty.yml"
+fi
 
 # This script should be executed from the root directory of the cloned repo
 cd "$(dirname "${0}")/.."
@@ -102,7 +106,8 @@ if [ -f "${ANSIBLE_ROLE_FILE}" ]; then
   elif [[ "${ANSIBLE_ROLE_FETCH_MODE}" == 'git-clone' ]];then
     pushd playbooks
       ansible-playbook git-clone-repos.yml \
-                       -i ${CLONE_DIR}/tests/inventory
+                       -i ${CLONE_DIR}/tests/inventory \
+                       -e role_file=${ANSIBLE_ROLE_FILE}
     popd
   else
     echo "Please set the ANSIBLE_ROLE_FETCH_MODE to either of the following options ['galaxy', 'git-clone']"

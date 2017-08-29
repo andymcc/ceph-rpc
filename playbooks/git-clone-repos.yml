@@ -23,5 +23,3 @@
 
   vars:
     roles: "{{ lookup('file', role_file)  | from_yaml }}"
-    role_file: '../ansible-role-requirements.yml'
-
