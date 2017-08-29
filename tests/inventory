@@ -4,9 +4,9 @@ mon1
 mon2
 osd1
 osd2
-osd3
+osdmonrgw
 rgw1
-rgw-mon
+rgw2
 
 [all_containers]
 mon1
@@ -15,17 +15,20 @@ osd1
 osd2
 osd3
 rgw1
-rgw-mon
+rgw2
+osdmonrgw
 
 [rgws]
 rgw1
+rgw2
+osdmonrgw
 
 [mons]
 mon1
 mon2
-rgw-mon
+osdmonrgw
 
 [osds]
 osd1
 osd2
-osd3
+osdmonrgw

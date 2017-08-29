@@ -112,7 +112,7 @@ ceph_stable: true # use ceph stable branch
 #ceph_mirror: http://download.ceph.com
 #ceph_stable_key: https://download.ceph.com/keys/release.asc
 ceph_stable_release: jewel
-monitor_interface: eth2
+monitor_interface: eth1
 public_network: 10.1.1.0/24
 cluster_network: 10.2.1.0/24
 radosgw_civetweb_num_threads: 1024
