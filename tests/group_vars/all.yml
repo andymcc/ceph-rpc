@@ -420,3 +420,15 @@ ceph_conf_overrides:
 # do not ever change this here
 #rolling_update: false
 
+# Set SSH vars
+ansible_ssh_extra_args: >
+  -o UserKnownHostsFile=/dev/null
+  -o StrictHostKeyChecking=no
+  -o ServerAliveInterval=64
+  -o ServerAliveCountMax=1024
+  -o Compression=no
+  -o TCPKeepAlive=yes
+  -o VerifyHostKeyDNS=no
+  -o ForwardX11=no
+  -o ForwardAgent=yes
+  -T

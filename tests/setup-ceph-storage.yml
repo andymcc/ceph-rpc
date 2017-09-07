@@ -1,4 +1,13 @@
 ---
+- name: Setup some localhost bits for MaaS testing
+  hosts: localhost
+  become: true
+  tasks:
+  - name: Setup directories
+    file:
+      state: directory
+      path: "/etc/ceph"
+
 - name: Playbook for configuring fake storage on Ceph hosts
   hosts: osds
   become: true

@@ -3,6 +3,8 @@ force_containers_destroy: True
 force_containers_data_destroy: False
 ansible_addr_prefix: "10.1.1"
 storage_addr_prefix: "10.2.1"
+maas_rpc_legacy_ceph: True
+
 
 ## LXC container default bind mounts
 lxc_container_default_bind_mounts:

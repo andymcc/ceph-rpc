@@ -8,12 +8,14 @@ osdmonrgw
 rgw1
 rgw2
 
+[hosts]
+localhost
+
 [all_containers]
 mon1
 mon2
 osd1
 osd2
-osd3
 rgw1
 rgw2
 osdmonrgw
